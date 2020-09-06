@@ -1,22 +1,21 @@
-package banking;
+package BankSystem;
 
 import java.util.Random;
 import java.util.Scanner;
 
 public class BankMenu {
 
-    public static void externalMenu(Account account) {
+    public static void externalMenu(DatabaseManager data) {
         Scanner scanner = new Scanner(System.in);
-        System.out.println(String.join("\n",
-                "1. Create an account", "2. Log into account", "0. Exit"));
+        System.out.println("1. Create an account\n2. Log into account\n0. Exit");
         int choice = scanner.nextInt();
         switch (choice) {
             case 1: {
-                createAccount();
+                createAccount(data);
                 break;
             }
             case 2: {
-                logInAccount(account);
+                logInAccount(data);
                 break;
             }
             case 0: {
@@ -25,12 +24,12 @@ public class BankMenu {
             }
             default: {
                 System.out.println("Incorrect");
-                externalMenu(account);
+                externalMenu(data);
             }
         }
     }
 
-    public static void createAccount() {
+    public static void createAccount(DatabaseManager data) {
         System.out.println("Your card has been created");
         Random random = new Random();
         String number = "400000";
@@ -38,43 +37,43 @@ public class BankMenu {
         number = number.concat(String.valueOf(random.nextInt(10_0000_0000 - 10_0000_000 + 1) + 10_0000_000));
         number = number.concat(String.valueOf(checkValid(number)));
 
-        Account ac = new Account(number, pin);
+        data.insert(number, pin);
+
         System.out.println("Your card number:");
         System.out.println(number);
         System.out.println("Your card PIN:");
         System.out.println(pin);
 
-        externalMenu(ac);
+        externalMenu(data);
     }
 
-    public static void logInAccount(Account account) {
+    public static void logInAccount(DatabaseManager data) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter your card number:");
-        String id = scanner.nextLine();
+        String number = scanner.nextLine();
         System.out.println("Enter your PIN:");
         String pin = scanner.nextLine();
-        if (account.getId().equals(id) && account.getPin().equals(pin)) {
+        if (data.getPinAccount(number).equals(pin)) {
             System.out.println("You have successfully logged in!");
-            internalMenu(account);
+            internalMenu(number, data);
         } else {
             System.out.println("Wrong card number or PIN!");
-            externalMenu(account);
+            externalMenu(data);
         }
     }
 
-    public static void internalMenu(Account account) {
+    public static void internalMenu(String number, DatabaseManager data) {
         Scanner scanner = new Scanner(System.in);
-        System.out.println(String.join("\n",
-                "1. Balance", "2. Log out", "0. Exit"));
+        System.out.println("1. Balance\n2. Log out\n0. Exit");
         int choice = scanner.nextInt();
         switch (choice) {
             case 1: {
-                System.out.println("Balance: " + account.getBalance());
-                internalMenu(account);
+                System.out.println("Balance: " + data.getBalanceAccount(number));
+                internalMenu(number, data);
                 break;
             }
             case 2: {
-                externalMenu(account);
+                externalMenu(data);
                 break;
             }
             case 0: {
@@ -83,14 +82,13 @@ public class BankMenu {
             }
             default: {
                 System.out.println("Incorrect");
-                internalMenu(account);
+                internalMenu(number, data);
             }
         }
     }
 
     static int checkValid(String pnr) {
         int extraChars = pnr.length() - 15;
-        System.out.println(pnr.length());
         if (extraChars < 0) {
             throw new IllegalArgumentException("Number length must be at least 15 characters!");
         }

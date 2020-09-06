@@ -1,8 +1,13 @@
-package banking;
+package BankSystem;
 
 public class Main {
+
     public static void main(String[] args) {
-        Account account = new Account();
-        BankMenu.externalMenu(account);
+        if (args[0].equals("-fileName")) {
+            DatabaseManager data = new DatabaseManager(args[1]);
+            BankMenu.externalMenu(data);
+
+
+        }
     }
 }
