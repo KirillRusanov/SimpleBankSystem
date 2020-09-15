@@ -37,16 +37,16 @@ public class DatabaseManager {
     }
 
 
-    public String getPinAccount(String number){
+    public String getPinAccount(String number) {
         String sql = "SELECT pin "
                 + "FROM card WHERE number = ?";
 
         try (Connection conn = this.connect();
-             PreparedStatement pstmt  = conn.prepareStatement(sql)){
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, number);
 
-            ResultSet rs  = pstmt.executeQuery();
+            ResultSet rs = pstmt.executeQuery();
 
             return rs.getString("pin");
 
@@ -58,16 +58,16 @@ public class DatabaseManager {
     }
 
 
-    public int getBalanceAccount(String number){
+    public int getBalanceAccount(String number) {
         String sql = "SELECT balance "
                 + "FROM card WHERE number = ?";
 
         try (Connection conn = this.connect();
-             PreparedStatement pstmt  = conn.prepareStatement(sql)){
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, number);
 
-            ResultSet rs  = pstmt.executeQuery();
+            ResultSet rs = pstmt.executeQuery();
 
             return rs.getInt("balance");
 
@@ -114,8 +114,8 @@ public class DatabaseManager {
     }
 
 
-    public void doTransfer(String number, int money) {
-        String sql = "UPDATE card SET balance = " + getBalanceAccount(number) + " +  ? "
+    public void doTransfer(String fromNumber, String toNumber, int money) {
+        String sql = "UPDATE card SET balance = " + getBalanceAccount(fromNumber) + " -  ? "
                 + "WHERE number = ?";
 
         try (Connection conn = this.connect();
@@ -123,7 +123,22 @@ public class DatabaseManager {
 
             // set the corresponding param
             pstmt.setInt(1, money);
-            pstmt.setString(2, number);
+            pstmt.setString(2, fromNumber);
+            // update
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        String sql2 = "UPDATE card SET balance = " + getBalanceAccount(toNumber) + " +  ? "
+                + "WHERE number = ?";
+
+        try (Connection conn = this.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql2)) {
+
+            // set the corresponding param
+            pstmt.setInt(1, money);
+            pstmt.setString(2, toNumber);
             // update
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -132,23 +147,27 @@ public class DatabaseManager {
     }
 
 
-    public int checkExist(String number){
-        String sql = "SELECT id "
+    public boolean checkExist(String number) {
+        boolean isUserExists = false;
+        String sql = "SELECT *"
                 + "FROM card WHERE number = ?";
 
         try (Connection conn = this.connect();
-             PreparedStatement pstmt  = conn.prepareStatement(sql)){
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
+            // set the corresponding param
             pstmt.setString(1, number);
 
-            ResultSet rs  = pstmt.executeQuery();
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    isUserExists = true;
+                }
+            }
 
-            return rs.getInt("id");
-
-
+            return isUserExists;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
-            return -1;
         }
+        return isUserExists;
     }
 }
