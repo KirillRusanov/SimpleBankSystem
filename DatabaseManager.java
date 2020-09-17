@@ -6,13 +6,19 @@ public class DatabaseManager {
 
     private String url = "";
 
+    String createTable = "CREATE TABLE IF NOT EXISTS card ("
+            + " id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + " number TEXT NOT NULL,"
+            + " pin TEXT NOT NULL,"
+            + " balance INTEGER DEFAULT 0"
+            + ");";
+
+
     public DatabaseManager(String url) {
         this.url = "jdbc:sqlite:" + url;
     }
 
-
     private Connection connect() {
-
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(url);
@@ -20,6 +26,15 @@ public class DatabaseManager {
             System.out.println(e.getMessage());
         }
         return conn;
+    }
+
+    public void createTable() {
+        try (Connection conn = this.connect();
+             PreparedStatement pstmt = conn.prepareStatement(createTable)) {
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
 
